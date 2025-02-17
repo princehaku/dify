@@ -493,7 +493,7 @@ services:
 
   # The DifySandbox
   sandbox:
-    image: langgenius/dify-sandbox:0.2.10
+    image: registry.cn-hangzhou.aliyuncs.com/haku-images/dify-sandbox:main
     restart: always
     environment:
       # The DifySandbox configurations

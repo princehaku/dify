@@ -1,0 +1,72 @@
+
+
+代码逻辑:
+第一步: 按照任务id 计算任务今日        "callSum", "callCount", "intentionCount", "callBillingMinute", "tagIdA", "tagIdB" 的增量
+第二步：修改一下原始json字段 对应关系是 #映射关系 创建日期=>createTime 任务ID=>taskId 外呼任务名称=>taskName 外呼量=>callSum 接通量=>callCount 接通率=>NULL A意向数=>tagIdA A意向率=>NULL B意向数=>tagIdB B意向率=>NULL AB意向数=>intentionCount AB意向率=>NULL 关注公众号=>NULL 接通到关注=>NULL AB到关注公众号=>NULL 加微人数=>NULL 关注到加微=>NULL 接通到加微=>NULL 计费分钟数=>callBillingMinute AI(+线路)计费单价=>NULL 成本=>NULL 加微CPA=>NULL 备注=>NULL
+第三步：按映射后的字段输出JSON
+
+附加:
+输入 def main(today_data_str: str, yesterday_data_str : str):
+输出 {"result": json.dumps(transformed_data, ensure_ascii=False, indent=4)}
+
+输出的时候再按照映射关系改回去
+
+原始json数据举例
+昨天: [
+    {
+        "tenantId": "1028",
+        "botId": "400610",
+        "taskId": "250217000000000684",
+        "taskName": "0205-AI课-D-重呼3",
+        "putId": "",
+        "status": 0,
+        "aiBotCount": 100,
+        "createTime": "2025-02-17 16:08:19",
+        "creator": "",
+        "totalCount": 307083,
+        "customerCount": 307083,
+        "completeCount": 0,
+        "prefilterStrategyId": "6",
+        "callSum": 0,
+        "callCount": 0,
+        "intentionCount": 0,
+        "callBillingMinute": 0
+    }]
+
+今天: [{
+        "tenantId": "1028",
+        "botId": "400610",
+        "taskId": "250217000000000684",
+        "taskName": "0205-AI课-D-重呼3",
+        "putId": "",
+        "status": 3,
+        "aiBotCount": 5000,
+        "createTime": "2025-02-17 16:08:19",
+        "creator": "",
+        "totalCount": 307083,
+        "customerCount": 307083,
+        "completeCount": 91816,
+        "prefilterStrategyId": "6",
+        "callSum": 91816,
+        "callCount": 8579,
+        "intentionCount": 73,
+        "callBillingMinute": 9061,
+        "tagIdA": 45,
+        "tagIdB": 28
+    }]
+
+输出例子
+
+[
+    {
+        "外呼量": "307083",
+        "外呼任务名称": "0205-AI课-D-重呼3",
+        "创建日期": "2025-02-17 16:08:19",
+        "任务ID": "250217000000000684",
+        "接通量": "8579",
+        "A意向数": "45",
+        "B意向数": "28",
+        "AB意向数": "73",
+        "计费分钟数": "9061"
+    }
+]

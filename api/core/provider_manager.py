@@ -101,11 +101,13 @@ class ProviderManager:
         )
 
         # append providers with langgenius/openai/openai
-        for provider_name in list(provider_name_to_provider_records_dict.keys()):
+        provider_name_list = list(provider_name_to_provider_records_dict.keys())
+        for provider_name in provider_name_list:
             provider_id = ModelProviderID(provider_name)
-            provider_name_to_provider_records_dict[str(provider_id)] = provider_name_to_provider_records_dict[
-                provider_name
-            ]
+            if str(provider_id) not in provider_name_list:
+                provider_name_to_provider_records_dict[str(provider_id)] = provider_name_to_provider_records_dict[
+                    provider_name
+                ]
 
         # Get all provider model records of the workspace
         provider_name_to_provider_model_records_dict = self._get_all_provider_models(tenant_id)
@@ -367,7 +369,8 @@ class ProviderManager:
 
         provider_name_to_provider_records_dict = defaultdict(list)
         for provider in providers:
-            provider_name_to_provider_records_dict[provider.provider_name].append(provider)
+            # TODO: Use provider name with prefix after the data migration
+            provider_name_to_provider_records_dict[str(ModelProviderID(provider.provider_name))].append(provider)
 
         return provider_name_to_provider_records_dict
 
@@ -506,7 +509,8 @@ class ProviderManager:
                             # FIXME ignore the type errork, onyl TrialHostingQuota has limit need to change the logic
                             provider_record = Provider(
                                 tenant_id=tenant_id,
-                                provider_name=provider_name,
+                                # TODO: Use provider name with prefix after the data migration.
+                                provider_name=ModelProviderID(provider_name).provider_name,
                                 provider_type=ProviderType.SYSTEM.value,
                                 quota_type=ProviderQuotaType.TRIAL.value,
                                 quota_limit=quota.quota_limit,  # type: ignore
@@ -521,13 +525,12 @@ class ProviderManager:
                                 db.session.query(Provider)
                                 .filter(
                                     Provider.tenant_id == tenant_id,
-                                    Provider.provider_name == provider_name,
+                                    Provider.provider_name == ModelProviderID(provider_name).provider_name,
                                     Provider.provider_type == ProviderType.SYSTEM.value,
                                     Provider.quota_type == ProviderQuotaType.TRIAL.value,
                                 )
                                 .first()
                             )
-
                             if provider_record and not provider_record.is_valid:
                                 provider_record.is_valid = True
                                 db.session.commit()

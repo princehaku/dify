@@ -68,13 +68,9 @@ const preprocessLaTeX = (content: string) => {
 }
 
 const preprocessThinkTag = (content: string) => {
-  if (!(content.trim().startsWith('<think>\n') || content.trim().startsWith('<details style=')))
-    return content
-
   return flow([
-    (str: string) => str.replaceAll('<think>\n', '<details>\n'),
-    (str: string) => str.replaceAll('\n</think>', '\n[ENDTHINKFLAG]</details>'),
-    (str: string) => str.replaceAll('\n</details>', '\n[ENDTHINKFLAG]</details>'),
+    (str: string) => str.replace('<think>\n', '<details data-think=true>\n'),
+    (str: string) => str.replace('\n</think>', '\n[ENDTHINKFLAG]</details>'),
   ])(content)
 }
 
@@ -262,6 +258,11 @@ export function Markdown(props: { content: string; className?: string }) {
                 if (node.type === 'element' && node.properties?.ref)
                   delete node.properties.ref
 
+                if (node.type === 'element' && !/^[a-z][a-z0-9]*$/i.test(node.tagName)) {
+                  node.type = 'text'
+                  node.value = `<${node.tagName}`
+                }
+
                 if (node.children)
                   node.children.forEach(iterate)
               }
@@ -269,7 +270,7 @@ export function Markdown(props: { content: string; className?: string }) {
             }
           },
         ]}
-        disallowedElements={['iframe', 'head', 'html', 'meta', 'link', 'style', 'body']}
+        disallowedElements={['iframe', 'head', 'html', 'meta', 'link', 'style', 'body', 'input']}
         components={{
           code: CodeBlock,
           img: Img,
